@@ -916,19 +916,20 @@ class UNet2DConditionModel(ModelMixin, ConfigMixin):
             self.down_blocks.append(down_block)
 
         # mid
-        assert mid_block_type == "UNetMidBlock2DCrossAttn"
-        self.mid_block = UNetMidBlock2DCrossAttn(
-            in_channels=block_out_channels[-1],
-            transformer_layers_per_block=transformer_layers_per_block[-1],
-            temb_channels=time_embed_dim,
-            resnet_eps=norm_eps,
-            resnet_act_fn=act_fn,
-            output_scale_factor=mid_block_scale_factor,
-            resnet_time_scale_shift="default",
-            cross_attention_dim=cross_attention_dim,
-            attn_num_head_channels=attention_head_dim[i],
-            resnet_groups=norm_num_groups,
-        )
+        # assert mid_block_type == "UNetMidBlock2DCrossAttn"
+        if mid_block_type == "UNetMidBlock2DCrossAttn":
+            self.mid_block = UNetMidBlock2DCrossAttn(
+                in_channels=block_out_channels[-1],
+                transformer_layers_per_block=transformer_layers_per_block[-1],
+                temb_channels=time_embed_dim,
+                resnet_eps=norm_eps,
+                resnet_act_fn=act_fn,
+                output_scale_factor=mid_block_scale_factor,
+                resnet_time_scale_shift="default",
+                cross_attention_dim=cross_attention_dim,
+                attn_num_head_channels=attention_head_dim[i],
+                resnet_groups=norm_num_groups,
+            )
 
         # up
         reversed_block_out_channels = list(reversed(block_out_channels))
@@ -1014,9 +1015,10 @@ class UNet2DConditionModel(ModelMixin, ConfigMixin):
             down_block_res_samples = new_down_block_res_samples
 
         # 4. mid
-        sample = self.mid_block(sample,
-                                emb,
-                                encoder_hidden_states=encoder_hidden_states)
+        if self.mid_block is not None:
+            sample = self.mid_block(sample,
+                                    emb,
+                                    encoder_hidden_states=encoder_hidden_states)
 
         if self.support_controlnet:
             sample = sample + additional_residuals[-1]
