@@ -144,3 +144,5 @@ dmypy.json
 
 # macOS filesystem
 *.DS_Store
+
+converted_models
